@@ -11,15 +11,13 @@ from dotenv import load_dotenv
 load_dotenv()
 # --- Environment Checker
 token = os.getenv("TOKEN")
-user_ids_str = os.getenv("USER_IDS", "")
-allowed_ids = [int(uid) for uid in user_ids_str.split(",") if uid.strip()]  # This filters out empty strings and spaces
-admin_ids = list(map(int, os.getenv("ADMIN_IDS", "").split(",")))
+allowed_ids = [int(uid.strip()) for uid in os.getenv("USER_IDS", "").split(",") if uid.strip()]
+admin_ids = [int(uid.strip()) for uid in os.getenv("ADMIN_IDS", "").split(",") if uid.strip()]
 ollama_base_url = os.getenv("OLLAMA_BASE_URL")
-log_level_str = os.getenv("LOG_LEVEL", "INFO")
+log_level_str = os.getenv("LOG_LEVEL", "INFO").upper()
 
 # --- Other
-log_levels = list(logging._levelToName.values())
-# ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET']
+log_levels = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"]
 
 # Set default level to be INFO
 if log_level_str not in log_levels:
@@ -32,7 +30,6 @@ logging.basicConfig(level=log_level)
 
 # Ollama API
 async def generate(payload: dict, modelname: str, prompt: str):
-    # try:
     async with aiohttp.ClientSession() as session:
         url = f"http://{ollama_base_url}:11434/api/chat"
 
@@ -100,13 +97,13 @@ def perms_admins(func):
 
 def md_autofixer(text: str) -> str:
     # In MarkdownV2, these characters must be escaped: _ * [ ] ( ) ~ ` > # + - = | { } . !
-    escape_chars = r"_[]()~>#+-=|{}.!"
+    escape_chars = "_[]()~>#+-=|{}.!"
     # Use a backslash to escape special characters
     return "".join("\\" + char if char in escape_chars else char for char in text)
 
 
 # Context-Related
-class contextLock:
+class ContextLock:
     lock = Lock()
 
     async def __aenter__(self):
@@ -114,3 +111,8 @@ class contextLock:
 
     async def __aexit__(self, exc_type, exc_value, exc_traceback):
         self.lock.release()
+
+    async def __aexit__(self, exc_type, exc_value, exc_traceback):
+        self.lock.release()
+
+
