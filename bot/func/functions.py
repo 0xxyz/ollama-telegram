@@ -11,7 +11,8 @@ from dotenv import load_dotenv
 load_dotenv()
 # --- Environment Checker
 token = os.getenv("TOKEN")
-allowed_ids = list(map(int, os.getenv("USER_IDS", "").split(",")))
+user_ids_str = os.getenv("USER_IDS", "")
+allowed_ids = [int(uid) for uid in user_ids_str.split(",") if uid.strip()]  # This filters out empty strings and spaces
 admin_ids = list(map(int, os.getenv("ADMIN_IDS", "").split(",")))
 ollama_base_url = os.getenv("OLLAMA_BASE_URL")
 log_level_str = os.getenv("LOG_LEVEL", "INFO")
